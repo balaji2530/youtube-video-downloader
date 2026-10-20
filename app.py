@@ -60,6 +60,7 @@ def build_ydl_opts(output_dir: str) -> dict:
       - Merge into a single .mp4 file using ffmpeg.
     """
     output_template = str(Path(output_dir) / "%(title).200s [%(id)s].%(ext)s")
+    bundled_ffmpeg = Path(__file__).with_name("ffmpeg.exe")
 
     ydl_opts = {
         # Try best mp4 video + best m4a audio first, then fall back to
@@ -71,6 +72,11 @@ def build_ydl_opts(output_dir: str) -> dict:
         ),
         "merge_output_format": "mp4",
         "outtmpl": output_template,
+        # Use the bundled binary when available; otherwise let yt-dlp find
+        # ffmpeg on PATH.
+        "ffmpeg_location": str(bundled_ffmpeg) if bundled_ffmpeg.is_file() else None,
+        # Avoid HTTP 416 errors from stale or truncated partial files.
+        "continuedl": False,
         "progress_hooks": [progress_hook],
         "noplaylist": True,      # set True if you only want a single video, not a whole playlist
         "quiet": False,
